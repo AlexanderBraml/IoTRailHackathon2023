@@ -45,6 +45,9 @@ class DataLogger():
         self._compare_flag = compare_flag
         self._only_changed_values = only_changed_values
 
+    def get_data(self):
+        return self._data
+    
     def _create_callback(self, device=None):
 
         if not device in ['IN', 'OUT']:
