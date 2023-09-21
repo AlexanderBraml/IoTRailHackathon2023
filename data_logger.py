@@ -3,6 +3,7 @@
 import time
 import datetime
 import sys
+import csv
 import argparse
 
 import matplotlib.pyplot as plt
@@ -22,6 +23,7 @@ DEFAULT_RECORD = '00'
 DEFAULT_FOLDER = 'data'
 DEFAULT_FILE_NAME = 'record'
 DEFAULT_FLAG = 'w'
+DEFAULT_JITTER = 10
 
 DEFAULT_THRESHOLD = 15
 DEFAULT_DELAY = 50
@@ -47,7 +49,7 @@ class DataLogger():
 
     def get_data(self):
         return self._data
-    
+
     def _create_callback(self, device=None):
 
         if not device in ['IN', 'OUT']:
@@ -92,6 +94,22 @@ class DataLogger():
                 self._delay, self._only_changed_values, self._compare_flag, self._interval_min, self._interval_max)
             return
         raise ValueError('select IN or OUT device')
+    
+    def smoothing(self, file_name=DEFAULT_FILE_NAME, filter_type=None, record=DEFAULT_RECORD, format=DEFAULT_FORMAT_DATA, jitter=DEFAULT_JITTER):
+        count = 0
+        with open('data/' + file_name + '_' + filter_type + '_' + record + '.' + format, 'r') as input_file:
+            rows = csv.reader(input_file, delimiter=',')
+            last = 0
+            current_jitter = jitter
+            for row in rows:
+                current = int(row[3].strip())
+                if last == 1 and current == 1:
+                        current_jitter += 1
+                if current_jitter >= jitter:
+                    current_jitter = 0
+                    count += 1
+                last = current
+        return count
 
     def log_data_set(self, file_name=DEFAULT_FILE_NAME, device_filter=None, record=DEFAULT_RECORD, format=DEFAULT_FORMAT_DATA, flag=DEFAULT_FLAG):
         with open(DEFAULT_FOLDER + "/" + file_name + "_" + device_filter + "_" + record + "." + DEFAULT_FORMAT_DATA, flag) as f:
@@ -111,7 +129,7 @@ class DataLogger():
         plt.ylabel(DEFAULT_Y_LABLE)
         plt.savefig(DEFAULT_FOLDER + "/" + file_name + "_" + device_filter + "_" + record + "." + format, format=format, dpi=dpi)
 
-    def run(self, file_name=DEFAULT_FILE_NAME, record=DEFAULT_RECORD, uids=[DEFAULT_UID_IN, DEFAULT_UID_OUT], host=DEFAULT_HOST, port=DEFAULT_PORT):
+    def run(self, file_name=DEFAULT_FILE_NAME, record=DEFAULT_RECORD, jitter=DEFAULT_JITTER, uids=[DEFAULT_UID_IN, DEFAULT_UID_OUT], host=DEFAULT_HOST, port=DEFAULT_PORT):
         self._connect_2_laser_range_finder(uids, host, port)
         self._register_callback('IN', self._create_callback(device='IN'))
         self._register_callback('OUT', self._create_callback(device='OUT'))
@@ -125,6 +143,11 @@ class DataLogger():
         self.plot_data_set(file_name, 'IN', record)
         self.plot_data_set(file_name, 'OUT', record)
 
+        data = []
+        data.append(self.smoothing(file_name, 'IN', record, jitter=jitter))
+        data.append(self.smoothing(file_name, 'OUT', record, jitter=jitter))
+        print(data)
+
 def args_setup():
     parser = argparse.ArgumentParser(prog='DataLogger', description='Data logger which logs the incoming data of two laser range finder.', epilog='Here comes the Bahn!')
     parser.add_argument('-f', help='file name', default=DEFAULT_FILE_NAME)
@@ -133,13 +156,14 @@ def args_setup():
     parser.add_argument('-d', help='delay', default=DEFAULT_DELAY)
     parser.add_argument('-a', help='min', default=DEFAULT_INTERVAL_MIN)
     parser.add_argument('-b', help='max', default=DEFAULT_INTERVAL_MAX)
+    parser.add_argument('-j', help='jitter', default=DEFAULT_JITTER)
     return parser.parse_args()
 
 def main():
     args = args_setup()
     print(args.f, args.r)
     data_logger = DataLogger(threshold=args.t, delay=args.d, interval_min=args.a, interval_max=args.b)
-    data_logger.run(file_name=args.f, record=args.r)
+    data_logger.run(file_name=args.f, record=args.r, jitter=int(args.j))
     
 if __name__ == "__main__":
     main()
