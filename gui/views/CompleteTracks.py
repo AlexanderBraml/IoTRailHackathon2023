@@ -1,11 +1,11 @@
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtGui import QPainter
 
-from Balise import Balise
+from gui.views.Balise import Balise
 from gui.GUIPositionConfig import GUIPositionConfig
-from Laser import Laser
+from gui.views.Laser import Laser
 from gui.Position import Position
-from RailSwitch import RailSwitch
+from gui.views.RailSwitch import RailSwitch
 
 
 class CompleteTracks(QtWidgets.QWidget):

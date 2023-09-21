@@ -4,7 +4,6 @@ from threading import Thread
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtGui import QPainter
 
-from gui import GUIPositionConfig
 from gui.GUIPositionConfig import GUIPositionConfig
 from gui.Position import Position
 
