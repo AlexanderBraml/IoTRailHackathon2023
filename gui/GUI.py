@@ -59,11 +59,11 @@ if __name__ == '__main__':
     gui.show()
 
 
-    def test_interactive():
+    def gui_demo():
         gui.set_speed(10)
         gui.set_state(TrainState.RUN)
         gui.set_position(TrainPosition.LEFT_CORNER)
-        time.sleep(14)
+        time.sleep(4)
         gui.set_speed(15)
         gui.set_switch(True)
         time.sleep(2)
@@ -93,7 +93,7 @@ if __name__ == '__main__':
         gui.set_state(TrainState.STOPPED)
 
 
-    t = Thread(target=test_interactive)
+    t = Thread(target=gui_demo)
     t.start()
 
     app.exec_()
